@@ -19,7 +19,7 @@ public class CheckSettings : SncVerifyCommandSettings
 
 public class CheckCommand : AsyncCommand<CheckSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, CheckSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, CheckSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             CheckLogic.Run<SapRfcRuntime>(settings),
             SapRfcRuntime.New(AnsiConsole.Console));

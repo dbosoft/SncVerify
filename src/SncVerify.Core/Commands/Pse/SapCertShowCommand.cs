@@ -11,7 +11,7 @@ public class SapCertShowSettings : SncVerifyCommandSettings;
 
 public class SapCertShowCommand : AsyncCommand<SapCertShowSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, SapCertShowSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, SapCertShowSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             SapCertShowLogic.Run<SimpleRuntime>(),
             SimpleRuntime.New(AnsiConsole.Console));

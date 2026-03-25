@@ -15,7 +15,7 @@ public class SapCertImportSettings : SncVerifyCommandSettings
 
 public class SapCertImportCommand : AsyncCommand<SapCertImportSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, SapCertImportSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, SapCertImportSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             SapCertImportLogic.Run<SimpleRuntime>(settings),
             SimpleRuntime.New(AnsiConsole.Console));

@@ -13,7 +13,7 @@ public class RunServerSettings : SncVerifyCommandSettings;
 
 public class RunServerCommand : AsyncCommand<RunServerSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, RunServerSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, RunServerSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             RunServerLogic.Run<SapRfcRuntime>(),
             SapRfcRuntime.New(AnsiConsole.Console));
