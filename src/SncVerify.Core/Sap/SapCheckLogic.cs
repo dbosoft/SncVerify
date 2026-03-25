@@ -125,7 +125,7 @@ public static class SapCheckLogic
     {
         try
         {
-            using var cert = new X509Certificate2(certData);
+            using var cert = X509CertificateLoader.LoadCertificate(certData);
             return cert.Thumbprint;
         }
         catch
