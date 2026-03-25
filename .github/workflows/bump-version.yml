@@ -22,7 +22,7 @@ jobs:
         $parts = $tag.Split('.')
         $major = [int]$parts[0]
         $minor = [int]$parts[1] + 1
-        $newVersion = "$major.$minor-alpha.{height}"
+        $newVersion = "$major.$minor.0-alpha.{height}"
 
         $json = Get-Content version.json | ConvertFrom-Json
         $json.version = $newVersion
