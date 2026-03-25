@@ -73,6 +73,16 @@ stages:
         script: |
           nbgv cloud --all-vars
 
+    - task: PowerShell@2
+      displayName: Override version from tag
+      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      inputs:
+        targetType: inline
+        pwsh: true
+        script: |
+          $version = "$(Build.SourceBranch)" -replace 'refs/tags/v', ''
+          Write-Host "##vso[build.updatebuildnumber]$version"
+
     - task: DotNetCoreCLI@2
       displayName: dotnet restore
       inputs:
@@ -84,7 +94,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release --no-restore'
+        arguments: '--configuration Release /p:Version=$(Build.BuildNumber) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
@@ -154,6 +164,16 @@ stages:
         script: |
           nbgv cloud --all-vars
 
+    - task: PowerShell@2
+      displayName: Override version from tag
+      condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/v')
+      inputs:
+        targetType: inline
+        pwsh: true
+        script: |
+          $version = "$(Build.SourceBranch)" -replace 'refs/tags/v', ''
+          Write-Host "##vso[build.updatebuildnumber]$version"
+
     - task: DotNetCoreCLI@2
       displayName: dotnet restore
       inputs:
@@ -166,7 +186,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release --runtime linux-x64 --no-restore'
+        arguments: '--configuration Release --runtime linux-x64 /p:Version=$(Build.BuildNumber) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
