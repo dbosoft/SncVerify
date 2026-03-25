@@ -111,7 +111,8 @@ stages:
         targetType: inline
         pwsh: true
         script: |
-          AzureSignTool sign -kvu "$(azureVault)" -kvi $env:ARM_CLIENT_ID -kvt $env:ARM_TENANT_ID -kvc "$(certName)" -tr http://rfc3161timestamp.globalsign.com/advanced -v $(Build.ArtifactStagingDirectory)/win-x64/SncVerify.exe
+          $token = az account get-access-token --scope https://vault.azure.net/.default --query accessToken -o tsv
+          AzureSignTool sign -kvu "$(azureVault)" -kva $token -kvc "$(certName)" -tr http://rfc3161timestamp.globalsign.com/advanced -v $(Build.ArtifactStagingDirectory)/win-x64/SncVerify.exe
 
     - task: ArchiveFiles@2
       displayName: Pack (win-x64)
