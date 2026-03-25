@@ -22,7 +22,7 @@ public readonly struct LiveConfigServiceIO : ConfigServiceIO
     public static readonly ConfigServiceIO Default = new LiveConfigServiceIO();
 
     public string GetConfigPath() =>
-        Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultConfigFileName);
+        Path.Combine(Config.PseConfig.GetDefaultPseDir(), DefaultConfigFileName);
 
     public Either<Error, SncVerifyConfig> ReadConfig(string path)
     {
