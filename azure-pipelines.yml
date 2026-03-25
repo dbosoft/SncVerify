@@ -37,7 +37,7 @@ stages:
       #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
       displayName: Set signing credentials
       inputs:
-        azureSubscription: 69c70ec9-fb20-4a90-8859-c406dd680a43
+        azureSubscription: 4475ee01-aa54-4e20-b52c-9c1fea831a3f
         addSpnToEnvironment: true
         scriptType: pscore
         scriptLocation: inlineScript
