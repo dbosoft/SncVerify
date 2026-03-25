@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SncVerify/SncVerify.csproj" />
+    <Project Path="src/SncVerify.Core/SncVerify.Core.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/SncVerify.Tests/SncVerify.Tests.csproj" />
+  </Folder>
+</Solution>
