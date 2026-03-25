@@ -10,7 +10,7 @@ public class ConfigListSettings : SncVerifyCommandSettings;
 
 public class ConfigListCommand : AsyncCommand<ConfigListSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, ConfigListSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, ConfigListSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             ConfigListLogic.Run<SimpleRuntime>(),
             SimpleRuntime.New(Spectre.Console.AnsiConsole.Console));

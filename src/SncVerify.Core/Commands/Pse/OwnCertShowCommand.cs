@@ -9,7 +9,7 @@ public class OwnCertShowSettings : SncVerifyCommandSettings;
 
 public class OwnCertShowCommand : AsyncCommand<OwnCertShowSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, OwnCertShowSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, OwnCertShowSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             OwnCertShowLogic.Run<SimpleRuntime>(),
             SimpleRuntime.New(AnsiConsole.Console));

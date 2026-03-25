@@ -11,7 +11,7 @@ public class SetupSettings : SncVerifyCommandSettings;
 
 public class SetupCommand : AsyncCommand<SetupSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, SetupSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, SetupSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             SetupLogic.RunSetup<SapRfcRuntime>(),
             SapRfcRuntime.New(AnsiConsole.Console));

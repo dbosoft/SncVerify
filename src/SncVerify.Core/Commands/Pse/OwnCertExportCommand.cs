@@ -15,7 +15,7 @@ public class OwnCertExportSettings : SncVerifyCommandSettings
 
 public class OwnCertExportCommand : AsyncCommand<OwnCertExportSettings>
 {
-    public override async Task<int> ExecuteAsync(CommandContext context, OwnCertExportSettings settings) =>
+    public override async Task<int> ExecuteAsync(CommandContext context, OwnCertExportSettings settings, CancellationToken cancellationToken) =>
         await RunHelper.Run(
             OwnCertExportLogic.Run<SimpleRuntime>(settings),
             SimpleRuntime.New(AnsiConsole.Console));
