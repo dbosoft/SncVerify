@@ -2,6 +2,10 @@
 
 A self-service SNC diagnostic and verification tool for SAP Basis administrators. Covers both **secure client connectivity** (RFC client with SNC) and **secure gateway** (RFC server registration with SNC) scenarios.
 
+## Download
+
+Get the latest release from [releases.dbosoft.eu/sncverify](https://releases.dbosoft.eu/sncverify).
+
 ## Prerequisites
 
 Place the following SAP libraries in the same directory as the `sncverify` executable:
@@ -92,7 +96,7 @@ sncverify sap_cert import <file>  # Import SAP certificate
 
 ## Configuration File
 
-Settings are stored in `sncverify.json` in the application directory. Edit via `sncverify setup` or `sncverify config set`.
+Settings are stored in `sncverify.json` in the user profile directory (`%APPDATA%\sncverify\sec` on Windows, `~/.sncverify/sec` on Linux) alongside the PSE. Edit via `sncverify setup` or `sncverify config set`.
 
 ```json
 {
