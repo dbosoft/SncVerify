@@ -206,7 +206,7 @@ stages:
   jobs:
   - deployment: UploadToReleases
     displayName: Upload to releases.dbosoft.eu
-    environment: dbosoft-releases
+    environment: sncverify-release
     pool:
       vmImage: windows-2022
     strategy:
