@@ -14,7 +14,10 @@ var app = new CommandApp();
 app.Configure(config =>
 {
     config.SetApplicationName("sncverify");
-    config.SetApplicationVersion("2.0.0");
+    config.SetApplicationVersion(
+        typeof(Program).Assembly
+            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion ?? "0.0.0");
 
     config.AddCommand<SetupCommand>("setup")
         .WithDescription("Interactive guided setup wizard");

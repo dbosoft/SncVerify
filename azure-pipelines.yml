@@ -1,0 +1,240 @@
+trigger:
+- main
+- refs/tags/v*
+
+stages:
+- stage: Build
+  displayName: Build
+  jobs:
+  - job: windows
+    pool:
+      vmImage: windows-2022
+
+    variables:
+    - group: signing
+
+    steps:
+    - checkout: self
+      fetchDepth: "0"
+
+    # Can be removed once the runner images are updated
+    - task: UseDotNet@2
+      inputs:
+        version: 10.x
+
+    - task: DotNetCoreCLI@2
+      displayName: Install AzureSignTool
+      # TODO: uncomment after testing
+      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        command: 'custom'
+        custom: 'tool'
+        arguments: 'install --global azuresigntool'
+        workingDirectory: '..'
+
+    - task: AzureCLI@2
+      # TODO: uncomment after testing
+      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      displayName: Set signing credentials
+      inputs:
+        azureSubscription: 69c70ec9-fb20-4a90-8859-c406dd680a43
+        addSpnToEnvironment: true
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          Write-Host "##vso[task.setvariable variable=ARM_CLIENT_ID]$env:servicePrincipalId"
+          Write-Host "##vso[task.setvariable variable=ARM_ID_TOKEN]$env:idToken"
+          Write-Host "##vso[task.setvariable variable=ARM_TENANT_ID]$env:tenantId"
+
+    - task: PowerShell@2
+      # TODO: uncomment after testing
+      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      displayName: Login to Azure
+      inputs:
+        targetType: inline
+        pwsh: true
+        script: |
+          az login --service-principal -u $env:ARM_CLIENT_ID --tenant $env:ARM_TENANT_ID --allow-no-subscriptions --federated-token $env:ARM_ID_TOKEN
+          # Fetch the access token for Azure Key Vault as the federated ID token expires after 10 minutes.
+          # See https://github.com/Azure/azure-cli/issues/28708#issuecomment-2047256166
+          az account get-access-token --scope https://vault.azure.net/.default --output none
+
+    - task: DotNetCoreCLI@2
+      displayName: Install NBGV tool
+      inputs:
+        command: 'custom'
+        custom: 'tool'
+        arguments: 'install --global nbgv'
+        workingDirectory: '..'
+
+    - task: CmdLine@2
+      displayName: Set version with NBGV
+      inputs:
+        script: |
+          nbgv cloud --all-vars
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet restore
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet build
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration Release --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet test
+      inputs:
+        command: test
+        projects: '**/test/**/*.csproj'
+        arguments: '--configuration Release --no-restore --no-build'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet publish (win-x64)
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'src/SncVerify/SncVerify.csproj'
+        arguments: '--configuration Release --runtime win-x64 --output $(Build.ArtifactStagingDirectory)/win-x64'
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: PowerShell@2
+      displayName: Sign executable
+      # TODO: uncomment after testing
+      #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+      inputs:
+        targetType: inline
+        pwsh: true
+        script: |
+          AzureSignTool sign -kvu "$(azureVault)" -kvi $env:ARM_CLIENT_ID -kvt $env:ARM_TENANT_ID -kvc "$(certName)" -tr http://rfc3161timestamp.globalsign.com/advanced -v $(Build.ArtifactStagingDirectory)/win-x64/SncVerify.exe
+
+    - task: ArchiveFiles@2
+      displayName: Pack (win-x64)
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/win-x64'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/release/sncverify_$(Build.BuildNumber)_windows_amd64.zip'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Upload release artifact
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/release'
+        artifactName: 'release-windows'
+
+  - job: linux
+    pool:
+      vmImage: ubuntu-22.04
+
+    steps:
+    - checkout: self
+      fetchDepth: "0"
+
+    - task: UseDotNet@2
+      inputs:
+        version: 10.x
+
+    - task: DotNetCoreCLI@2
+      displayName: Install NBGV tool
+      inputs:
+        command: 'custom'
+        custom: 'tool'
+        arguments: 'install --global nbgv'
+        workingDirectory: '..'
+
+    - task: CmdLine@2
+      displayName: Set version with NBGV
+      inputs:
+        script: |
+          nbgv cloud --all-vars
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet restore
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet build
+      inputs:
+        command: build
+        projects: '**/*.csproj'
+        arguments: '--configuration Release --runtime linux-x64 --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet test
+      inputs:
+        command: test
+        projects: '**/test/**/*.csproj'
+        arguments: '--configuration Release --runtime linux-x64 --no-restore --no-build'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet publish (linux-x64)
+      inputs:
+        command: 'publish'
+        publishWebProjects: false
+        projects: 'src/SncVerify/SncVerify.csproj'
+        arguments: '--configuration Release --runtime linux-x64 --no-build --output $(Build.ArtifactStagingDirectory)/linux-x64'
+        zipAfterPublish: false
+        modifyOutputPath: false
+
+    - task: ArchiveFiles@2
+      displayName: Pack (linux-x64)
+      inputs:
+        rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/linux-x64'
+        includeRootFolder: false
+        archiveType: 'tar'
+        tarCompression: 'gz'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/release/sncverify_$(Build.BuildNumber)_linux_amd64.tar.gz'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Upload release artifact
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/release'
+        artifactName: 'release-linux'
+
+- stage: Release
+  displayName: Release
+  dependsOn: Build
+  # TODO: uncomment after testing
+  #condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+  jobs:
+  - deployment: UploadToReleases
+    displayName: Upload to releases.dbosoft.eu
+    environment: dbosoft-releases
+    pool:
+      vmImage: windows-2022
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: release-windows
+
+          - download: current
+            artifact: release-linux
+
+          - task: AzureFileCopy@6
+            displayName: Upload Windows release
+            inputs:
+              SourcePath: '$(Pipeline.Workspace)/release-windows/*.zip'
+              azureSubscription: 'bb4b9b0d-7a78-421b-a9ff-183e5222c378'
+              Destination: 'AzureBlob'
+              storage: 'dbosoftreleaseseuwest'
+              ContainerName: 'staging'
+              AdditionalArgumentsForBlobCopy: '--recursive --metadata="product=sncverify;version=$(Build.BuildNumber);os=windows;arch=amd64"'
+
+          - task: AzureFileCopy@6
+            displayName: Upload Linux release
+            inputs:
+              SourcePath: '$(Pipeline.Workspace)/release-linux/*.tar.gz'
+              azureSubscription: 'bb4b9b0d-7a78-421b-a9ff-183e5222c378'
+              Destination: 'AzureBlob'
+              storage: 'dbosoftreleaseseuwest'
+              ContainerName: 'staging'
+              AdditionalArgumentsForBlobCopy: '--recursive --metadata="product=sncverify;version=$(Build.BuildNumber);os=linux;arch=amd64"'
