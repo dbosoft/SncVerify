@@ -1,3 +1,4 @@
+using System.Reflection;
 using SncVerify;
 using SncVerify.Commands.Check;
 using SncVerify.Commands.Config;
