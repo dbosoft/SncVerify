@@ -158,6 +158,7 @@ stages:
       inputs:
         command: 'restore'
         projects: '**/*.csproj'
+        restoreArguments: '--runtime linux-x64'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet build
