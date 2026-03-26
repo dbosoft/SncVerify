@@ -79,6 +79,7 @@ stages:
         script: |
           $version = "$(Build.SourceBranch)" -replace 'refs/tags/v', ''
           Write-Host "##vso[build.updatebuildnumber]$version"
+          Write-Host "##vso[task.setvariable variable=VersionOverrideArgs]/p:OverrideVersion=$version"
 
     - task: DotNetCoreCLI@2
       displayName: dotnet restore
@@ -91,7 +92,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release /p:OverrideVersion=$(Build.BuildNumber) --no-restore'
+        arguments: '--configuration Release $(VersionOverrideArgs) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
@@ -106,7 +107,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: 'src/SncVerify/SncVerify.csproj'
-        arguments: '--configuration Release --runtime win-x64 /p:OverrideVersion=$(Build.BuildNumber) --output $(Build.ArtifactStagingDirectory)/win-x64'
+        arguments: '--configuration Release --runtime win-x64 $(VersionOverrideArgs) --output $(Build.ArtifactStagingDirectory)/win-x64'
         zipAfterPublish: false
         modifyOutputPath: false
 
@@ -169,6 +170,7 @@ stages:
         script: |
           $version = "$(Build.SourceBranch)" -replace 'refs/tags/v', ''
           Write-Host "##vso[build.updatebuildnumber]$version"
+          Write-Host "##vso[task.setvariable variable=VersionOverrideArgs]/p:OverrideVersion=$version"
 
     - task: DotNetCoreCLI@2
       displayName: dotnet restore
@@ -182,7 +184,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release --runtime linux-x64 /p:OverrideVersion=$(Build.BuildNumber) --no-restore'
+        arguments: '--configuration Release --runtime linux-x64 $(VersionOverrideArgs) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
@@ -197,7 +199,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: 'src/SncVerify/SncVerify.csproj'
-        arguments: '--configuration Release --runtime linux-x64 /p:OverrideVersion=$(Build.BuildNumber) --no-build --output $(Build.ArtifactStagingDirectory)/linux-x64'
+        arguments: '--configuration Release --runtime linux-x64 $(VersionOverrideArgs) --no-build --output $(Build.ArtifactStagingDirectory)/linux-x64'
         zipAfterPublish: false
         modifyOutputPath: false
 
