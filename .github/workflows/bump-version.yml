@@ -16,10 +16,19 @@ jobs:
         ref: main
 
     - name: Bump version.json
+      id: bump
       shell: pwsh
       run: |
         $tag = "${{ github.event.release.tag_name }}" -replace '^v', ''
         $parts = $tag.Split('.')
+
+        # Skip patch releases — only bump on minor/major
+        if ([int]$parts[2] -ne 0) {
+          Write-Host "Patch release ($tag) — skipping version bump"
+          echo "skip=true" >> $env:GITHUB_OUTPUT
+          return
+        }
+
         $major = [int]$parts[0]
         $minor = [int]$parts[1] + 1
         $newVersion = "$major.$minor.0-alpha.{height}"
@@ -31,6 +40,7 @@ jobs:
         Write-Host "Bumped version to $newVersion"
 
     - name: Commit and push
+      if: steps.bump.outputs.skip != 'true'
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
