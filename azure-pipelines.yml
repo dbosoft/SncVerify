@@ -91,7 +91,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release /p:Version=$(Build.BuildNumber) --no-restore'
+        arguments: '--configuration Release /p:Version=$(Build.BuildNumber) /p:InformationalVersion=$(Build.BuildNumber) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
@@ -106,7 +106,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: 'src/SncVerify/SncVerify.csproj'
-        arguments: '--configuration Release --runtime win-x64 /p:Version=$(Build.BuildNumber) --output $(Build.ArtifactStagingDirectory)/win-x64'
+        arguments: '--configuration Release --runtime win-x64 /p:Version=$(Build.BuildNumber) /p:InformationalVersion=$(Build.BuildNumber) --output $(Build.ArtifactStagingDirectory)/win-x64'
         zipAfterPublish: false
         modifyOutputPath: false
 
@@ -182,7 +182,7 @@ stages:
       inputs:
         command: build
         projects: '**/*.csproj'
-        arguments: '--configuration Release --runtime linux-x64 /p:Version=$(Build.BuildNumber) --no-restore'
+        arguments: '--configuration Release --runtime linux-x64 /p:Version=$(Build.BuildNumber) /p:InformationalVersion=$(Build.BuildNumber) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: dotnet test
@@ -197,7 +197,7 @@ stages:
         command: 'publish'
         publishWebProjects: false
         projects: 'src/SncVerify/SncVerify.csproj'
-        arguments: '--configuration Release --runtime linux-x64 /p:Version=$(Build.BuildNumber) --no-build --output $(Build.ArtifactStagingDirectory)/linux-x64'
+        arguments: '--configuration Release --runtime linux-x64 /p:Version=$(Build.BuildNumber) /p:InformationalVersion=$(Build.BuildNumber) --no-build --output $(Build.ArtifactStagingDirectory)/linux-x64'
         zipAfterPublish: false
         modifyOutputPath: false
 
